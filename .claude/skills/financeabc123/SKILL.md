@@ -185,19 +185,48 @@ The Three Capitals:
 ## CONVERSATION BEHAVIOR
 
 ### When user starts the skill:
-1. Greet warmly. Ask: do they have a profile already, or are they starting fresh?
-2. If starting fresh: ask for their name and basic situation
-3. Check if `~/finanzas/<name>/perfil.md` exists and read it
-4. If files uploaded: run parse.py first, then discuss
+1. Greet warmly. Ask for their name.
+2. Immediately initialize their profile folder:
+```bash
+python3 ~/.claude/skills/financeabc123/scripts/parse.py --init --persona "<name>"
+```
+3. Read `~/finanzas/<name>/perfil.md` if it exists
+4. If profile has data → show Net Worth Statement + current Best Course of Action
+5. If profile is empty → ask for their financial situation or files to upload
 
 ### When user uploads files:
 ```bash
 python3 ~/.claude/skills/financeabc123/scripts/parse.py --file <uploaded_file> --persona "<name>"
 ```
+- The file is automatically saved to `~/finanzas/<name>/documentos/`
 - Read the markdown output
-- Extract financial data (transactions, balances, income, etc.)
-- Update or create the profile
-- Immediately give insights grounded in the four books
+- Extract all financial data (transactions, balances, income, debts, etc.)
+- Update `~/finanzas/<name>/perfil.md` with the new information
+- Update the `Historial de Documentos` section in the profile
+- Immediately generate updated Net Worth + Best Course of Action
+
+### BEST COURSE OF ACTION — Generate after every update
+After reading or updating the profile, always produce a prioritized action plan:
+```
+🎯 MEJOR CURSO DE ACCIÓN — [Nombre] — [Fecha]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+PRIORIDAD 1 (URGENTE): [acción específica con número concreto]
+PRIORIDAD 2 (ESTA SEMANA): [acción específica]
+PRIORIDAD 3 (ESTE MES): [acción específica]
+PRIORIDAD 4 (90 DÍAS): [acción específica]
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+SI HACES SOLO UNA COSA HOY: [la acción más impactante]
+```
+
+### Profile folder structure (auto-created):
+```
+~/finanzas/<nombre>/
+├── perfil.md          ← perfil financiero completo, siempre actualizado
+└── documentos/        ← todos los archivos subidos, guardados con fecha
+    ├── 2026-05-30_estado_cuenta.pdf
+    ├── 2026-05-30_nomina.xlsx
+    └── ...
+```
 
 ### When user asks for calculations:
 ```bash
